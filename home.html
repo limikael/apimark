@@ -1,4 +1,38 @@
 <html>
+	<head>
+		<script>
+			ws=new WebSocket("ws://localhost:8080/ws");
+
+			function waitEvent(o,event) {
+				return new Promise((resolve, reject)=>{
+					function onError() {
+						o.removeEventListener(event,onEvent);
+						o.removeEventListener("error",onError);
+						reject();
+					}
+
+					function onEvent(data) {
+						o.removeEventListener(event,onEvent);
+						o.removeEventListener("error",onError);
+						resolve(data);
+					}
+
+					o.addEventListener(event,onEvent);
+					o.addEventListener("error",onError);
+				});
+			}
+
+			async function main() {
+				await waitEvent(ws,"open");
+				console.log("it is open");
+				ws.send("hello");
+				let data=await waitEvent(ws,"message");
+				console.log("got: "+data);
+			}
+
+			main();
+		</script>
+	</head>
     <body>
         <h1>Hello.</h1>
     </body>
